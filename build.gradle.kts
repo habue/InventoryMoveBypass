@@ -22,8 +22,8 @@ repositories {
 
 dependencies {
     minecraft(libs.minecraft)
-    add("modImplementation", libs.fabric.loader)
-    add("modImplementation", libs.meteor.client)
+    implementation(libs.fabric.loader)
+    implementation(libs.meteor.client)
 }
 
 java {

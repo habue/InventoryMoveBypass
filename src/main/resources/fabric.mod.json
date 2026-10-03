@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "inventorymove",
+  "version": "${version}",
+  "name": "Inventory Move Bypass",
+  "description": "A Meteor addon for inventory movement on Grim.",
+  "authors": ["dinosaurwizard"],
+  "contact": { },
+  "icon": "assets/template/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "meteor": ["dinosaurwizard.inventorymove.InventoryMoveAddon"]
+  },
+  "mixins": ["inventorymove.mixins.json"],
+  "custom": {
+    "meteor-client:color": "182,251,43",
+    "modmenu": {
+      "parent": {
+        "id": "meteor-client"
+      }
+    }
+  },
+  "depends": {
+    "java": ">=21",
+    "minecraft": ">=1.21.4 <=1.21.11",
+    "meteor-client": "*"
+  }
+}

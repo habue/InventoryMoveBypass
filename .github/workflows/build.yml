@@ -1,12 +1,12 @@
-name: Build 1.21.11 JAR
+name: Build 26.1.2 JAR
 
 on:
   push:
     branches:
-      - main
+      - "26.1.2"
   pull_request:
     branches:
-      - main
+      - "26.1.2"
   workflow_dispatch:
 
 permissions:
@@ -20,11 +20,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java 21
+      - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "25"
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -32,13 +32,13 @@ jobs:
       - name: Make Gradle wrapper executable
         run: chmod +x ./gradlew
 
-      - name: Build Meteor addon for Minecraft 1.21.11
+      - name: Build Meteor addon for Minecraft 26.1.2
         run: ./gradlew clean build --stacktrace
 
       - name: Upload JAR
         uses: actions/upload-artifact@v4
         with:
-          name: InventoryMoveBypass-1.21.11
+          name: InventoryMoveBypass-26.1.2
           path: |
             build/libs/*.jar
             !build/libs/*-sources.jar

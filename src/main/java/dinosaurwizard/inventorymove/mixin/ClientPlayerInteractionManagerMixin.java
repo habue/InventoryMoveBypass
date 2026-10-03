@@ -8,12 +8,12 @@ package dinosaurwizard.inventorymove.mixin;
 
 import dinosaurwizard.inventorymove.modules.InventoryMoveBypass;
 import meteordevelopment.meteorclient.systems.modules.Modules;
-import net.minecraft.client.network.ClientPlayerInteractionManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInputC2SPacket;
-import net.minecraft.util.PlayerInput;
-import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.client.multiplayer.MultiPlayerGameMode;
+import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
+import net.minecraft.world.entity.player.Input;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerInput;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,43 +21,39 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static meteordevelopment.meteorclient.MeteorClient.mc;
 
-@Mixin(ClientPlayerInteractionManager.class)
+@Mixin(MultiPlayerGameMode.class)
 public class ClientPlayerInteractionManagerMixin {
 
-    @Inject(method = "clickSlot", at = @At("HEAD"))
-    private void onClickSlotHead(int syncId, int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci) {
+    @Inject(method = "handleContainerInput", at = @At("HEAD"))
+    private void onClickSlotHead(int containerId, int slotId, int button, ContainerInput actionType, Player player, CallbackInfo ci) {
         Modules modules = Modules.get();
-        if (modules == null) return;
+        if (modules == null || mc.player == null || mc.getConnection() == null) return;
 
         InventoryMoveBypass bypass = modules.get(InventoryMoveBypass.class);
         if (bypass != null && bypass.isActive() && bypass.isPlayerMoving()) {
-
-            // Stop sprinting temporarily
             if (bypass.sprint.get() && mc.player.isSprinting()) {
-                mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.STOP_SPRINTING));
+                mc.getConnection().send(new ServerboundPlayerCommandPacket(
+                    mc.player, ServerboundPlayerCommandPacket.Action.STOP_SPRINTING));
             }
 
-            // Set all inputs to false on server temporarily
-            PlayerInput stop = new PlayerInput(false, false, false, false, false, false, false);
-            mc.getNetworkHandler().sendPacket(new PlayerInputC2SPacket(stop));
+            Input stop = new Input(false, false, false, false, false, false, false);
+            mc.getConnection().send(new ServerboundPlayerInputPacket(stop));
         }
     }
 
-    @Inject(method = "clickSlot", at = @At("RETURN"))
-    private void onClickSlotReturn(int syncId, int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci) {
+    @Inject(method = "handleContainerInput", at = @At("RETURN"))
+    private void onClickSlotReturn(int containerId, int slotId, int button, ContainerInput actionType, Player player, CallbackInfo ci) {
         Modules modules = Modules.get();
-        if (modules == null) return;
+        if (modules == null || mc.player == null || mc.getConnection() == null) return;
 
         InventoryMoveBypass bypass = modules.get(InventoryMoveBypass.class);
         if (bypass != null && bypass.isActive() && bypass.isPlayerMoving()) {
-
-            // Return to sprinting if necessary
             if (bypass.sprint.get() && mc.player.isSprinting()) {
-                mc.getNetworkHandler().sendPacket(new ClientCommandC2SPacket(mc.player, ClientCommandC2SPacket.Mode.START_SPRINTING));
+                mc.getConnection().send(new ServerboundPlayerCommandPacket(
+                    mc.player, ServerboundPlayerCommandPacket.Action.START_SPRINTING));
             }
 
-            // Return to normal inputs
-            mc.getNetworkHandler().sendPacket(new PlayerInputC2SPacket(mc.player.input.playerInput));
+            mc.getConnection().send(new ServerboundPlayerInputPacket(mc.player.input.keyPresses));
         }
     }
 }

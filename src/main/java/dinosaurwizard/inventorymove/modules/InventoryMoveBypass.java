@@ -11,7 +11,7 @@ package dinosaurwizard.inventorymove.modules;
 import meteordevelopment.meteorclient.settings.*;
 import meteordevelopment.meteorclient.systems.modules.Categories;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import net.minecraft.util.PlayerInput;
+import net.minecraft.world.entity.player.Input;
 
 public class InventoryMoveBypass extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
@@ -28,7 +28,9 @@ public class InventoryMoveBypass extends Module {
     }
 
     public boolean isPlayerMoving() {
-        PlayerInput input = mc.player.input.playerInput;
+        if (mc.player == null || mc.player.input == null) return false;
+
+        Input input = mc.player.input.keyPresses;
         return input.forward() || input.backward() || input.left() || input.right() || input.jump();
     }
 }
